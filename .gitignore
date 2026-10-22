@@ -1,8 +1,41 @@
+# Local Python environments, build outputs, and editor caches
 .venv/
+venv/
+env/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 *.egg-info/
+.DS_Store
+*.log
+*.swp
+
+# Local configuration and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+secrets/
+.secrets/
+
+# Generated data, checkpoints, and media (selected results below are published)
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
+*.mp4
+*.mov
 data/*.npz
 results/*.pt
 results/*.mp4
