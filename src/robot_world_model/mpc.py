@@ -3,7 +3,7 @@
 import time
 import numpy as np
 import torch
-from .policies import heuristic_action
+from .policies import legacy_heuristic_action
 
 
 class CEMMPC:
@@ -19,7 +19,7 @@ class CEMMPC:
 
     def act(self, state, goal):
         started = time.perf_counter()
-        mean = np.tile(heuristic_action(state, goal)[:3], (self.horizon, 1))
+        mean = np.tile(legacy_heuristic_action(state, goal)[:3], (self.horizon, 1))
         std = np.full_like(mean, 0.8)
         state_t = torch.from_numpy(np.asarray(state, dtype=np.float32))
         goal_t = torch.from_numpy(np.asarray(goal, dtype=np.float32))

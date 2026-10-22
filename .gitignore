@@ -16,3 +16,12 @@ results/*.json
 !results/train.json
 !results/prediction.json
 !results/evaluation.json
+!data/rich.npz
+!results/rich.pt
+!results/phase2_train.json
+!results/phase2_prediction.json
+!results/phase2_evaluation.json
+!results/phase2_dev_ablation.json
+!results/phase2_regimes.png
+!results/phase2_trajectories.png
+!results/phase2_mpc.gif

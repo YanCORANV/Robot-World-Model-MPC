@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 from .env import make_env, state_from_obs, goal_from_obs, distance, STATE_NAMES
-from .policies import heuristic_action
+from .policies import legacy_heuristic_action as heuristic_action
 from .data import collect, load
 from .model import train, load_model
 from .prediction import evaluate_prediction

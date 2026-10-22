@@ -40,7 +40,8 @@ def load_model(path):
     return model.eval()
 
 
-def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128):
+def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128,
+          regime_weights=None):
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.set_num_threads(min(torch.get_num_threads(), 4))
@@ -52,6 +53,18 @@ def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128):
     state = torch.from_numpy(data["state"].astype(np.float32))
     action = torch.from_numpy(data["action"].astype(np.float32))
     next_state = torch.from_numpy(data["next_state"].astype(np.float32))
+    if regime_weights is None:
+        weights = torch.ones(len(state))
+    else:
+        if "pushing" not in data:
+            raise ValueError("regime weighting requires pushing labels")
+        separation = np.minimum(np.linalg.norm(data["state"][:, :3] - data["state"][:, 3:6], axis=1),
+                                np.linalg.norm(data["next_state"][:, :3] - data["next_state"][:, 3:6], axis=1))
+        near_static = (separation < 0.10) & ~data["pushing"].astype(bool)
+        values = np.ones(len(state), dtype=np.float32)
+        values[near_static] = regime_weights[0]
+        values[data["pushing"].astype(bool)] = regime_weights[1]
+        weights = torch.from_numpy(values)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     best = float("inf")
     history = []
@@ -60,7 +73,8 @@ def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128):
         order = torch.as_tensor(np.random.permutation(np.flatnonzero(train_mask)))
         for batch in order.split(batch_size):
             predicted = model(state[batch], action[batch])
-            loss = (((predicted - next_state[batch]) / model.delta_std) ** 2).mean()
+            per_sample = (((predicted - next_state[batch]) / model.delta_std) ** 2).mean(1)
+            loss = (per_sample * weights[batch]).sum() / weights[batch].sum()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -69,14 +83,16 @@ def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128):
             val_pred = model(state[val_mask], action[val_mask])
             train_pred = model(state[train_mask], action[train_mask])
             train_loss = float((((train_pred - next_state[train_mask]) / model.delta_std) ** 2).mean())
-            val_loss = float((((val_pred - next_state[val_mask]) / model.delta_std) ** 2).mean())
+            val_per_sample = (((val_pred - next_state[val_mask]) / model.delta_std) ** 2).mean(1)
+            val_loss = float((val_per_sample * weights[val_mask]).sum() / weights[val_mask].sum())
         history.append({"epoch": epoch + 1, "train_normalized_mse": train_loss,
                         "validation_normalized_mse": val_loss})
         if val_loss < best:
             best = val_loss
             Path(path).parent.mkdir(parents=True, exist_ok=True)
             torch.save({"state_dict": model.state_dict(), "hidden": hidden,
-                        "seed": seed, "best_epoch": epoch + 1}, path)
+                        "seed": seed, "best_epoch": epoch + 1,
+                        "regime_weights": regime_weights}, path)
     return {"best_validation_normalized_mse": best,
             "best_epoch": min(history, key=lambda row: row["validation_normalized_mse"])["epoch"],
             "last_train_normalized_mse": history[-1]["train_normalized_mse"],

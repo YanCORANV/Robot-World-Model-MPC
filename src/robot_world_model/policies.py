@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def heuristic_action(state, goal, noise=0.0, rng=None):
+def legacy_heuristic_action(state, goal, noise=0.0, rng=None):
     gripper = np.asarray(state[:3])
     obj = np.asarray(state[3:6])
     toward = np.asarray(goal[:2]) - obj[:2]
@@ -26,3 +26,14 @@ def heuristic_action(state, goal, noise=0.0, rng=None):
     if noise and rng is not None:
         action[:3] += rng.normal(0, noise, 3)
     return np.clip(action, -1, 1).astype(np.float32)
+
+
+def heuristic_action(state, goal, noise=0.0, rng=None):
+    """Stop inside a 4.5 cm goal band, then use the original approach/push rule.
+
+    The environment marks success below 5 cm. The margin leaves room for the
+    object's residual velocity after the robot stops pushing.
+    """
+    if np.linalg.norm(np.asarray(state[3:6]) - np.asarray(goal)) < 0.045:
+        return np.zeros(4, dtype=np.float32)
+    return legacy_heuristic_action(state, goal, noise=noise, rng=rng)
