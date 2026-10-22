@@ -61,7 +61,7 @@ class SimpleSlidePhysics(torch.nn.Module):
         vertical=torch.abs(state[:,2:3]-state[:,5:6])<.04
         hit=(separation<self.radius)&vertical&(closing>.001)
         new_velocity=new_velocity+hit.float()*self.impact_gain*closing.clamp_min(0)*normal
-        # Velocity is a per-control-step displacement, not m/s.
+        # Fetch velocity is scaled by control-step duration; integration below is approximate.
         next_state[:,:3]=grip
         next_state[:,9:12]=grip_v
         next_state[:,3:5]=state[:,3:5]+(velocity+new_velocity)*.5
