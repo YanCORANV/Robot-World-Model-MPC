@@ -128,6 +128,45 @@ Phase-2 artifacts: [dataset](data/rich.npz), [model](results/rich.pt), [training
 
 ![Improved MPC rollout](results/phase2_mpc.gif)
 
+## Phase 3: does the learned model improve planning?
+
+Run `bash scripts/phase3.sh` with the existing phase-1 and phase-2 checkpoints/data. It evaluates prediction on the held-out rich-data episodes, runs a 10-seed developer check (300–309), then runs the **predeclared final seeds 20000–20099 once**. These 100 seeds did not overlap the training collection (5000–5119), phase-2 developer seeds (200–219), phase-2 test seeds (1000–1029), or phase-3 developer seeds. All controllers receive the same 50-step reset, action bounds, goal and success rule. The staged controllers share exactly the same observed-state approach/descend/hold function. Their push stage differs: fixed 0.8 forward action; or CEM with the literal zero-change, original, or rich-data dynamics model. All three CEMs use horizon 10, 64 candidates and 3 iterations, with the same per-episode random seed. The simple heuristic is the phase-2 no-model controller. No planner queries MuJoCo candidate futures.
+
+Six of the 100 resets already met the 5 cm threshold. The main success denominator excludes those six; the overall count includes them. Wilson 95% intervals describe uncertainty in each success rate. Runtime is Python action-selection wall time on the same M1 Pro CPU; fixed controllers have no CEM search. `Near` is gripper/object center separation <6.5 cm; `contact` is collision at the final MuJoCo substep; `moving push` is the motion-and-proximity proxy described above.
+
+| Controller | New final success / 94 (95% CI) | Overall / 100 | Final distance | Near | End-step contact | Moving push | Action time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Heuristic | 74/94 (69.4–85.8%) | 79 | 78.3 mm | 27.1% | 6.7% | 30.4% | 0.015 ms |
+| Shared approach + fixed push | **90/94 (89.6–98.3%)** | 96 | **42.9 mm** | 36.3% | 5.0% | 21.9% | 0.008 ms |
+| Shared approach + zero-change CEM | 90/94 (89.6–98.3%) | 96 | 55.2 mm | 75.7% | 8.6% | 30.5% | 0.501 ms |
+| Shared approach + original-model CEM | 89/94 (88.1–97.7%) | 95 | 53.6 mm | 43.7% | 5.9% | 23.0% | 0.467 ms |
+| Shared approach + rich-model CEM | 90/94 (89.6–98.3%) | 96 | 50.5 mm | 43.7% | 4.8% | 22.3% | 0.426 ms |
+
+Success and mean distance tell different, compatible stories: fixed push, zero-change CEM and rich-model CEM fail on the **same four seeds**; among their successful episodes, mean distances are 17.6, 30.5 and 25.6 mm respectively. The rich model improves precision over zero-change CEM, but fixed push is more precise still. One initially successful reset ends outside the goal under the heuristic, explaining its 79 overall successes versus 74 new successes plus six initially successful resets.
+
+On the 94 paired initially unsolved seeds, rich-model versus zero-change CEM has **0 net success difference** (zero discordant pairs; exact two-sided McNemar p=1), and rich versus fixed push also has **0 net success difference**. Rich versus original-model CEM gains one seed (exact p=1; insufficient evidence of a rate gain). Rich versus the older heuristic gains 16 seeds (exact p=3.05×10⁻⁵), but this compares different push mechanisms and cannot isolate model value. Paired bootstrap 95% intervals for mean final distance differences (rich minus baseline) are **−7.38 to −2.28 mm** versus zero-change, **+4.93 to +11.24 mm** versus fixed push, and **−15.20 to +3.64 mm** versus original-model CEM. The bootstrap uses 10,000 paired seed resamples with fixed seed 104; these intervals are descriptive, and secondary comparisons were not used to select a model.
+
+The models do learn object motion on held-out trajectories, even though this does not yield more successes with the staged controller:
+
+| Object XYZ RMSE on rich-data test episodes | Zero-change | Original MLP | Rich-data MLP |
+| --- | ---: | ---: | ---: |
+| One step, all 978 transitions | 11.65 mm | 5.09 mm | **3.98 mm** |
+| Free space, 472 | 10.67 mm | 4.81 mm | **3.43 mm** |
+| Near static, 202 | **0.39 mm** | 2.84 mm | 2.13 mm |
+| Active pushing, 304 | 16.13 mm | 6.49 mm | **5.46 mm** |
+| End-step MuJoCo contact, 72 | 10.95 mm | 5.49 mm | **5.10 mm** |
+| Five-step open loop, 883 windows | 49.99 mm | 35.18 mm | **26.49 mm** |
+
+During active pushing, actual mean object XY displacement is 22.11 mm per step; the original and rich models predict 19.29 and 20.51 mm. In near-contact *static* states, however, both models hallucinate millimeters of motion while the zero-change predictor is nearly perfect. Five-step error is still much larger than one-step error. The 12-D state also omits detailed contact and joint configuration. This combination can mislead longer-horizon optimization even when one-step RMSE looks good.
+
+Replacing the push model changes actions on identical first-push observations: across 92 matched seeds that reached the push stage, the mean L2 difference from the rich-model action is 0.264 for fixed push, 0.437 for zero-change CEM and 0.243 for original-model CEM. These changes do **not** create a success advantage over fixed push or zero-change CEM. The common geometric approach and the simplicity of straight-line FetchPush likely dominate the 5 cm binary outcome. This study establishes a prediction improvement and a modest precision gain over the zero predictor; it does **not** establish a learned-world-model contribution to task success, necessity of contact prediction for this controller, or transfer beyond simulation. A future study should first choose a task that requires nontrivial action sequence prediction and preserve strong non-learned baselines; that is outside this phase.
+
+Artifacts: [raw five-policy results and paired comparisons](results/phase3_final_evaluation.json), [prediction metrics](results/phase3_prediction.json), [controller comparison](results/phase3_controllers.png), [regime comparison](results/phase3_prediction.png), [per-transition predicted-versus-actual motion](results/phase3_motion_scatter.png), and [developer check](results/phase3_dev_evaluation.json).
+
+![Matched controller performance](results/phase3_controllers.png)
+
+![Per-transition predicted and actual object motion](results/phase3_motion_scatter.png)
+
 ## Source and license
 
 Original project code is MIT licensed; see [LICENSE](LICENSE). The environment is [Gymnasium-Robotics FetchPush](https://robotics.farama.org/envs/fetch/push/) (MIT), based on [Plappert et al., 2018](https://arxiv.org/abs/1802.09464). Physics uses [MuJoCo](https://mujoco.readthedocs.io/) (Apache 2.0). PyTorch supplies the MLP. These dependencies are installed separately and are not copied into this repository.

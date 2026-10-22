@@ -5,6 +5,56 @@ import numpy as np
 import torch
 
 
+def approach_action(state, goal):
+    """Shared observed-state geometry for every staged push ablation.
+
+    Returns (action, phase, direction, push_height); action is None at push time.
+    No simulator future or learned prediction is used here.
+    """
+    grip, obj = np.asarray(state[:3]), np.asarray(state[3:6])
+    displacement = np.asarray(goal[:2]) - obj[:2]
+    distance = np.linalg.norm(displacement)
+    action = np.zeros(4, dtype=np.float32)
+    if np.linalg.norm(np.asarray(goal) - obj) < 0.045:
+        return action, "hold", None, None
+    direction = displacement / max(distance, 1e-6)
+    behind = obj[:2] - 0.055 * direction
+    push_height = obj[2] + 0.015
+    if np.linalg.norm(grip[:2] - behind) > 0.022:
+        target = np.r_[behind, max(push_height + 0.035, grip[2])]
+        action[:3] = np.clip((target - grip) / 0.05, -1, 1)
+        return action, "approach", direction, push_height
+    if abs(grip[2] - push_height) > 0.018:
+        target = np.r_[behind, push_height]
+        action[:3] = np.clip((target - grip) / 0.05, -1, 1)
+        return action, "descend", direction, push_height
+    return None, "model_push", direction, push_height
+
+
+class ZeroChangeDynamics(torch.nn.Module):
+    """Literal no-change predictor for all 12 state coordinates."""
+
+    def forward(self, state, action):
+        return state
+
+
+class FixedPushController:
+    """Same geometric stage as CEM; fixed 0.8 forward push after contact setup."""
+
+    def __init__(self):
+        self.last_phase = "approach"
+
+    def act(self, state, goal):
+        started = time.perf_counter()
+        action, phase, direction, push_height = approach_action(state, goal)
+        self.last_phase = phase
+        if action is None:
+            action = np.zeros(4, dtype=np.float32)
+            action[:2] = 0.8 * direction
+            action[2] = np.clip((push_height - state[2]) / 0.05, -0.5, 0.5)
+        return action, time.perf_counter() - started
+
+
 class ContactAwareMPC:
     def __init__(self, model, horizon=10, candidates=64, iterations=3, seed=7):
         torch.set_num_threads(min(torch.get_num_threads(), 4))
@@ -18,29 +68,13 @@ class ContactAwareMPC:
 
     def act(self, state, goal):
         started = time.perf_counter()
-        grip, obj = np.asarray(state[:3]), np.asarray(state[3:6])
-        displacement = np.asarray(goal[:2]) - obj[:2]
-        distance = np.linalg.norm(displacement)
-        action = np.zeros(4, dtype=np.float32)
-        if np.linalg.norm(np.asarray(goal) - obj) < 0.045:
-            self.last_phase = "hold"
-            return action, time.perf_counter() - started
-        direction = displacement / max(distance, 1e-6)
-        behind = obj[:2] - 0.055 * direction
-        xy_error = np.linalg.norm(grip[:2] - behind)
-        push_height = obj[2] + 0.015
-        if xy_error > 0.022:
-            self.last_phase = "approach"
-            target = np.r_[behind, max(push_height + 0.035, grip[2])]
-            action[:3] = np.clip((target - grip) / 0.05, -1, 1)
-            return action, time.perf_counter() - started
-        if abs(grip[2] - push_height) > 0.018:
-            self.last_phase = "descend"
-            target = np.r_[behind, push_height]
-            action[:3] = np.clip((target - grip) / 0.05, -1, 1)
+        action, phase, direction, push_height = approach_action(state, goal)
+        self.last_phase = phase
+        if action is not None:
             return action, time.perf_counter() - started
 
-        self.last_phase = "model_push"
+        grip = np.asarray(state[:3])
+        action = np.zeros(4, dtype=np.float32)
         # Restricted action family: forward push, small lateral correction,
         # and height correction. This keeps CEM in its observed data support.
         mean = np.zeros((self.horizon, 3), dtype=np.float32)

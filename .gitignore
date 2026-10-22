@@ -25,3 +25,9 @@ results/*.json
 !results/phase2_regimes.png
 !results/phase2_trajectories.png
 !results/phase2_mpc.gif
+!results/phase3_prediction.json
+!results/phase3_dev_evaluation.json
+!results/phase3_final_evaluation.json
+!results/phase3_prediction.png
+!results/phase3_motion_scatter.png
+!results/phase3_controllers.png

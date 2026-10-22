@@ -1,0 +1,213 @@
+{
+  "dataset": "data/rich.npz, split=2, held-out whole episodes",
+  "notes": "Pushing means >2 mm object motion and <10 cm gripper separation; contact is MuJoCo collision at final internal substep.",
+  "models": {
+    "zero_change": {
+      "overall": {
+        "count": 978,
+        "model_object_rmse_m": 0.011652667075395584,
+        "zero_change_object_rmse_m": 0.011652667075395584,
+        "predicted_object_xy_motion_m": 0.0,
+        "actual_object_xy_motion_m": 0.007520060520619154
+      },
+      "regimes": {
+        "free_space": {
+          "count": 472,
+          "model_object_rmse_m": 0.01066824421286583,
+          "zero_change_object_rmse_m": 0.01066824421286583,
+          "predicted_object_xy_motion_m": 0.0,
+          "actual_object_xy_motion_m": 0.0012617586180567741
+        },
+        "near_contact_static": {
+          "count": 202,
+          "model_object_rmse_m": 0.00039314449531957507,
+          "zero_change_object_rmse_m": 0.00039314449531957507,
+          "predicted_object_xy_motion_m": 0.0,
+          "actual_object_xy_motion_m": 0.0001918675407068804
+        },
+        "actual_pushing": {
+          "count": 304,
+          "model_object_rmse_m": 0.01612524688243866,
+          "zero_change_object_rmse_m": 0.01612524688243866,
+          "predicted_object_xy_motion_m": 0.0,
+          "actual_object_xy_motion_m": 0.022106286138296127
+        }
+      },
+      "multi_step": {
+        "horizon": 5,
+        "windows": 883,
+        "model_object_rmse_m": 0.04999491944909096,
+        "zero_change_object_rmse_m": 0.04999491944909096,
+        "by_start_regime": {
+          "free_space": {
+            "windows": 424,
+            "model_object_rmse_m": 0.032973937690258026,
+            "zero_change_object_rmse_m": 0.032973937690258026
+          },
+          "near_contact_static": {
+            "windows": 185,
+            "model_object_rmse_m": 0.03678593412041664,
+            "zero_change_object_rmse_m": 0.03678593412041664
+          },
+          "actual_pushing": {
+            "windows": 274,
+            "model_object_rmse_m": 0.07388344407081604,
+            "zero_change_object_rmse_m": 0.07388344407081604
+          }
+        }
+      },
+      "contact_conditioned": {
+        "end_step_contact": {
+          "count": 72,
+          "one_step_object_rmse_m": 0.01094608474522829,
+          "predicted_xy_motion_m": 0.0,
+          "actual_xy_motion_m": 0.014545930549502373
+        },
+        "no_end_step_contact": {
+          "count": 906,
+          "one_step_object_rmse_m": 0.01170699018985033,
+          "predicted_xy_motion_m": 0.0,
+          "actual_xy_motion_m": 0.006961712148040533
+        }
+      }
+    },
+    "original_model": {
+      "overall": {
+        "count": 978,
+        "model_object_rmse_m": 0.005089372396469116,
+        "zero_change_object_rmse_m": 0.011652667075395584,
+        "predicted_object_xy_motion_m": 0.009111064486205578,
+        "actual_object_xy_motion_m": 0.007520060520619154
+      },
+      "regimes": {
+        "free_space": {
+          "count": 472,
+          "model_object_rmse_m": 0.0048073772341012955,
+          "zero_change_object_rmse_m": 0.01066824421286583,
+          "predicted_object_xy_motion_m": 0.004683422856032848,
+          "actual_object_xy_motion_m": 0.0012617586180567741
+        },
+        "near_contact_static": {
+          "count": 202,
+          "model_object_rmse_m": 0.0028402479365468025,
+          "zero_change_object_rmse_m": 0.00039314449531957507,
+          "predicted_object_xy_motion_m": 0.004143417347222567,
+          "actual_object_xy_motion_m": 0.0001918675407068804
+        },
+        "actual_pushing": {
+          "count": 304,
+          "model_object_rmse_m": 0.006487337406724691,
+          "zero_change_object_rmse_m": 0.01612524688243866,
+          "predicted_object_xy_motion_m": 0.01928643137216568,
+          "actual_object_xy_motion_m": 0.022106286138296127
+        }
+      },
+      "multi_step": {
+        "horizon": 5,
+        "windows": 883,
+        "model_object_rmse_m": 0.03518453240394592,
+        "zero_change_object_rmse_m": 0.04999491944909096,
+        "by_start_regime": {
+          "free_space": {
+            "windows": 424,
+            "model_object_rmse_m": 0.030894652009010315,
+            "zero_change_object_rmse_m": 0.032973937690258026
+          },
+          "near_contact_static": {
+            "windows": 185,
+            "model_object_rmse_m": 0.02676473744213581,
+            "zero_change_object_rmse_m": 0.03678593412041664
+          },
+          "actual_pushing": {
+            "windows": 274,
+            "model_object_rmse_m": 0.04504202678799629,
+            "zero_change_object_rmse_m": 0.07388344407081604
+          }
+        }
+      },
+      "contact_conditioned": {
+        "end_step_contact": {
+          "count": 72,
+          "one_step_object_rmse_m": 0.0054899901151657104,
+          "predicted_xy_motion_m": 0.012020639143884182,
+          "actual_xy_motion_m": 0.014545930549502373
+        },
+        "no_end_step_contact": {
+          "count": 906,
+          "one_step_object_rmse_m": 0.0050561740063130856,
+          "predicted_xy_motion_m": 0.00887984037399292,
+          "actual_xy_motion_m": 0.006961712148040533
+        }
+      }
+    },
+    "rich_model": {
+      "overall": {
+        "count": 978,
+        "model_object_rmse_m": 0.003984851762652397,
+        "zero_change_object_rmse_m": 0.011652667075395584,
+        "predicted_object_xy_motion_m": 0.00846979022026062,
+        "actual_object_xy_motion_m": 0.007520060520619154
+      },
+      "regimes": {
+        "free_space": {
+          "count": 472,
+          "model_object_rmse_m": 0.003429798875004053,
+          "zero_change_object_rmse_m": 0.01066824421286583,
+          "predicted_object_xy_motion_m": 0.00326245604082942,
+          "actual_object_xy_motion_m": 0.0012617586180567741
+        },
+        "near_contact_static": {
+          "count": 202,
+          "model_object_rmse_m": 0.0021276595070958138,
+          "zero_change_object_rmse_m": 0.00039314449531957507,
+          "predicted_object_xy_motion_m": 0.002521809656172991,
+          "actual_object_xy_motion_m": 0.0001918675407068804
+        },
+        "actual_pushing": {
+          "count": 304,
+          "model_object_rmse_m": 0.0054600476287305355,
+          "zero_change_object_rmse_m": 0.01612524688243866,
+          "predicted_object_xy_motion_m": 0.020507141947746277,
+          "actual_object_xy_motion_m": 0.022106286138296127
+        }
+      },
+      "multi_step": {
+        "horizon": 5,
+        "windows": 883,
+        "model_object_rmse_m": 0.02648742124438286,
+        "zero_change_object_rmse_m": 0.04999491944909096,
+        "by_start_regime": {
+          "free_space": {
+            "windows": 424,
+            "model_object_rmse_m": 0.01833580993115902,
+            "zero_change_object_rmse_m": 0.032973937690258026
+          },
+          "near_contact_static": {
+            "windows": 185,
+            "model_object_rmse_m": 0.02232716791331768,
+            "zero_change_object_rmse_m": 0.03678593412041664
+          },
+          "actual_pushing": {
+            "windows": 274,
+            "model_object_rmse_m": 0.037471432238817215,
+            "zero_change_object_rmse_m": 0.07388344407081604
+          }
+        }
+      },
+      "contact_conditioned": {
+        "end_step_contact": {
+          "count": 72,
+          "one_step_object_rmse_m": 0.005097145680338144,
+          "predicted_xy_motion_m": 0.013508809730410576,
+          "actual_xy_motion_m": 0.014545930549502373
+        },
+        "no_end_step_contact": {
+          "count": 906,
+          "one_step_object_rmse_m": 0.0038828146643936634,
+          "predicted_xy_motion_m": 0.008069339208304882,
+          "actual_xy_motion_m": 0.006961712148040533
+        }
+      }
+    }
+  }
+}
