@@ -167,6 +167,62 @@ Artifacts: [raw five-policy results and paired comparisons](results/phase3_final
 
 ![Per-transition predicted and actual object motion](results/phase3_motion_scatter.png)
 
+## Phase 4: predicting momentum in FetchSlide
+
+FetchSlide-v4 asks the robot to hit a puck across a low-friction table, often toward a goal outside its workspace. The [official environment contract](https://robotics.farama.org/envs/fetch/slide/) specifies a 25-D observation, four bounded actions, 25 Hz control, and sparse success within 5 cm. `slide_env.py` verifies these on the installed v4 environment. The Slide model uses **15 observed coordinates**: gripper XYZ, puck XYZ, absolute puck XYZ displacement per 0.04 s step, gripper XYZ displacement per step, and puck angular displacement per step. The original Push state already contained linear velocity; Slide explicitly retains it and adds angular velocity. Goal coordinates are never a dynamics input. A puck with nonzero velocity continues moving under zero action, so position alone cannot describe its future. The 15-D state still omits exact collision geometry and may not be fully Markovian.
+
+```bash
+source .venv/bin/activate
+bash scripts/phase4.sh
+```
+
+The script probes FetchSlide, collects 200 seeded episodes (10,000 transitions), fits an analytic impact/friction baseline on **training episodes only**, trains a 15-D residual MLP for 45 epochs, evaluates held-out predictions, checks controllers on developer seeds 400–429, and evaluates once on the **frozen final seeds 30000–30099**. The 100 final seeds do not overlap collection seeds 6000–6199 or the developer seeds. Rendering the GIF needs a working local MuJoCo graphics context; the headless experiments are independent of rendering. Individual commands use `python -m robot_world_model.slide_experiment {probe,collect,train,predict,dev,final,demo}`.
+
+Five episode-level samplers cover random exploration, geometry pushes, velocity-aware impulses, perturbed impacts, and impulse-followed-by-coasting. Collection uses the frozen exploratory impulse sampler; the later velocity cutoff applies to control evaluation. Regenerating all 200 episodes produced arrays identical to the committed dataset, and retraining reproduced every checkpoint tensor. Splits contain 6,000 train / 2,000 validation / 2,000 test transitions, with whole episodes isolated. The data contain 235 offline impact-proxy steps and 5,331 sliding steps; the 40 held-out episodes contain 49 and 1,057. `impact` means an end-step MuJoCo collision **or** a >3 mm/step velocity jump with the gripper within 11 cm. The latter detects impacts that occur between the 20 simulator substeps but is not a collision ground truth. `sliding` and `decelerating` are observable motion labels. The MLP training loss weights impacts 8× and sliding 2×; all normalizers use training episodes only.
+
+The analytic model fits three gripper action gains, a sliding speed decrement (1.43 mm per control step), and a normal impulse gain (1.72) on training transitions. Zero-change, analytic physics, and MLP use the **same** CEM search during the strike phase: 25-step horizon, 48 candidates, two iterations, and identical random seeds, action constraints, cost, approach/descend/coast logic, and environment resets. CEM scores predicted stopping position, endpoint distance, residual speed, implausible distant object motion, and action effort. It executes one real action and replans; MuJoCo is used only for real stepping and offline evaluation. The geometry and handcrafted impulse baselines use no world model. An exploratory hybrid uses the MLP for closing contact and analytic friction for free coasting; it is reported separately from pure MLP MPC.
+
+### Held-out prediction
+
+Object XYZ error on the **same 2,000 test transitions**; one-step errors are per-coordinate RMSE. The stopping row measures mean XY distance between predicted and observed final resting position on 28 held-out episodes with an impact, at least five subsequent steps, and final speed <3 mm/step. Open-loop rollouts use recorded actions without correcting intermediate model states.
+
+| Metric | Zero change | Analytic physics | Learned MLP | Exploratory hybrid |
+| --- | ---: | ---: | ---: | ---: |
+| One-step object position RMSE | 9.41 mm | 4.43 mm | **1.61 mm** | 4.37 mm |
+| Impact position RMSE (49 steps) | 13.34 mm | 5.32 mm | **3.58 mm** | 3.77 mm |
+| Impact velocity RMSE | 16.80 mm/step | 4.52 | **3.89** | 4.13 |
+| Five-step object position RMSE | 46.0 mm | 20.9 mm | **10.6 mm** | 19.9 mm |
+| Twenty-step object position RMSE | 162.7 mm | 86.2 mm | 80.8 mm | **65.5 mm** |
+| Final stopping-position error (28 episodes) | 515.1 mm | **76.2 mm** | 266.4 mm | 76.2 mm |
+
+The MLP learns impact and immediate sliding motion; its 1-step error is substantially lower than the physics baseline. Yet small velocity and direction biases compound during long free coasts. Its predicted final stop is much worse than the analytic friction model's, despite its lower short-horizon RMSE. The [open-loop trajectory](results/slide_prediction_trajectory.png) illustrates this difference on held-out data, not on a control test seed.
+
+### Matched controller test
+
+All controllers received the same 100 resets and 50 controlled steps. One reset was already successful; the main denominator excludes it. Each overall-success count is the table's new-success count plus one. After step 50, every environment received **50 zero actions** to measure physical stopping position separately from final controlled-step success; all resulting puck speeds were below 3 mm/step. `Ever` counts any transient success during control and must not be read as final success. Wilson intervals for final success and all per-seed outcomes are in the [raw evaluation](results/slide_final_evaluation.json).
+
+| Controller | New final successes / 99 | Ever / 100 | Mean final distance | Mean settling error | Impact proxy | End-step contact | Action time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Random | 0 | 1 | 489 mm | 492 mm | 1.0% | 0.6% | 0.008 ms |
+| Geometry heuristic | 7 | 58 | 266 mm | 295 mm | 2.0% | 0.4% | 0.012 ms |
+| Handcrafted impulse | 24 | 61 | 127 mm | 152 mm | 2.2% | 0.8% | 0.015 ms |
+| Zero-change CEM | 1 | 2 | 388 mm | 351 mm | 2.5% | 1.1% | 0.669 ms |
+| Analytic physics CEM | **33** | 69 | **107 mm** | 136 mm | 2.2% | 0.9% | 0.287 ms |
+| Learned MLP CEM | 26 | 41 | 112 mm | **116 mm** | 4.0% | 1.7% | 0.397 ms |
+| Exploratory hybrid CEM | 29 | 60 | 119 mm | 145 mm | 2.3% | 0.7% | 0.476 ms |
+
+For the primary paired comparison, learned minus analytic-physics CEM success is **−7.1 percentage points** (paired bootstrap 95% CI −18.2 to +4.0; exact McNemar p=0.281). Learned minus handcrafted impulse is +2.0 points (CI −10.1 to +14.1; p=0.868). Neither establishes a success advantage. Learned beats zero-change by 25.3 points (CI +17.2 to +34.3; p<10⁻⁶), showing that some dynamics prediction is essential for this CEM implementation, but the analytic model supplies it without an MLP. On the same initial first-strike observations, learned and analytic CEM commands differ by mean action L2 0.189, confirming that model substitution changes planning behavior.
+
+Mean *observed* settling error is 19.7 mm lower for learned than analytic CEM, but its paired 95% interval (−46.2 to +5.4 mm) spans zero. Versus handcrafted impulse it is 36.2 mm lower (exploratory paired interval −64.1 to −10.0 mm); this secondary endpoint was examined after the main success comparison. Physics CEM attains the best mean final distance and highest point-estimate success. Geometry's 58 transient versus seven final successes reveal severe overshoot. Thus the learned model predicts impacts more accurately and affects actions, but **this experiment does not establish that it improves final task success over strong non-learning alternatives**. Its long-coast stopping bias is a plausible reason; controller timing and task variability may also matter. These are simulation results only.
+
+Artifacts: [dataset](data/slide.npz), [model checkpoint](results/slide.pt), [training and physics fit](results/slide_training.json), [prediction metrics](results/slide_prediction.json), [phase error plot](results/slide_prediction.png), [predicted versus actual trajectory](results/slide_prediction_trajectory.png), [matched controller results](results/slide_final_evaluation.json), [controller comparison](results/slide_controllers.png), [control trajectories](results/slide_trajectories.png), and [real MuJoCo MPC GIF](results/slide_learned_mpc.gif). The GIF shows a successful **developer-seed** rollout; it is not used as a success-rate estimate.
+
+![FetchSlide prediction by motion phase](results/slide_prediction.png)
+
+![FetchSlide matched controller comparison](results/slide_controllers.png)
+
+![Real learned-MPC FetchSlide rollout](results/slide_learned_mpc.gif)
+
 ## Source and license
 
-Original project code is MIT licensed; see [LICENSE](LICENSE). The environment is [Gymnasium-Robotics FetchPush](https://robotics.farama.org/envs/fetch/push/) (MIT), based on [Plappert et al., 2018](https://arxiv.org/abs/1802.09464). Physics uses [MuJoCo](https://mujoco.readthedocs.io/) (Apache 2.0). PyTorch supplies the MLP. These dependencies are installed separately and are not copied into this repository.
+Original project code is MIT licensed; see [LICENSE](LICENSE). The environments are [Gymnasium-Robotics FetchPush](https://robotics.farama.org/envs/fetch/push/) and [FetchSlide](https://robotics.farama.org/envs/fetch/slide/) (MIT), based on [Plappert et al., 2018](https://arxiv.org/abs/1802.09464). Physics uses [MuJoCo](https://mujoco.readthedocs.io/) (Apache 2.0). PyTorch supplies the MLP. These dependencies are installed separately and are not copied into this repository.

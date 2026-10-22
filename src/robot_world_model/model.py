@@ -9,15 +9,16 @@ from .env import STATE_DIM, ACTION_DIM
 
 
 class DynamicsMLP(nn.Module):
-    def __init__(self, hidden=128):
+    def __init__(self, hidden=128, state_dim=STATE_DIM):
         super().__init__()
-        self.net = nn.Sequential(nn.Linear(STATE_DIM + ACTION_DIM, hidden), nn.ReLU(),
+        self.state_dim = state_dim
+        self.net = nn.Sequential(nn.Linear(state_dim + ACTION_DIM, hidden), nn.ReLU(),
                                  nn.Linear(hidden, hidden), nn.ReLU(),
-                                 nn.Linear(hidden, STATE_DIM))
-        self.register_buffer("input_mean", torch.zeros(STATE_DIM + ACTION_DIM))
-        self.register_buffer("input_std", torch.ones(STATE_DIM + ACTION_DIM))
-        self.register_buffer("delta_mean", torch.zeros(STATE_DIM))
-        self.register_buffer("delta_std", torch.ones(STATE_DIM))
+                                 nn.Linear(hidden, state_dim))
+        self.register_buffer("input_mean", torch.zeros(state_dim + ACTION_DIM))
+        self.register_buffer("input_std", torch.ones(state_dim + ACTION_DIM))
+        self.register_buffer("delta_mean", torch.zeros(state_dim))
+        self.register_buffer("delta_std", torch.ones(state_dim))
 
     def fit_normalizers(self, state, action, next_state):
         x = torch.as_tensor(np.concatenate([state, action], axis=1), dtype=torch.float32)
@@ -35,17 +36,18 @@ class DynamicsMLP(nn.Module):
 
 def load_model(path):
     checkpoint = torch.load(path, map_location="cpu", weights_only=True)
-    model = DynamicsMLP(checkpoint["hidden"])
+    model = DynamicsMLP(checkpoint["hidden"], checkpoint.get("state_dim", STATE_DIM))
     model.load_state_dict(checkpoint["state_dict"])
     return model.eval()
 
 
 def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128,
-          regime_weights=None):
+          regime_weights=None, sample_weights=None):
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.set_num_threads(min(torch.get_num_threads(), 4))
-    model = DynamicsMLP(hidden)
+    state_dim = data["state"].shape[1]
+    model = DynamicsMLP(hidden, state_dim)
     train_mask = data["split"] == 0
     val_mask = data["split"] == 1
     model.fit_normalizers(data["state"][train_mask], data["action"][train_mask],
@@ -53,7 +55,11 @@ def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128,
     state = torch.from_numpy(data["state"].astype(np.float32))
     action = torch.from_numpy(data["action"].astype(np.float32))
     next_state = torch.from_numpy(data["next_state"].astype(np.float32))
-    if regime_weights is None:
+    if sample_weights is not None:
+        if len(sample_weights) != len(state):
+            raise ValueError("sample_weights must match transitions")
+        weights = torch.as_tensor(sample_weights, dtype=torch.float32)
+    elif regime_weights is None:
         weights = torch.ones(len(state))
     else:
         if "pushing" not in data:
@@ -91,8 +97,10 @@ def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128,
             best = val_loss
             Path(path).parent.mkdir(parents=True, exist_ok=True)
             torch.save({"state_dict": model.state_dict(), "hidden": hidden,
+                        "state_dim": state_dim,
                         "seed": seed, "best_epoch": epoch + 1,
-                        "regime_weights": regime_weights}, path)
+                        "regime_weights": regime_weights,
+                        "has_sample_weights": sample_weights is not None}, path)
     return {"best_validation_normalized_mse": best,
             "best_epoch": min(history, key=lambda row: row["validation_normalized_mse"])["epoch"],
             "last_train_normalized_mse": history[-1]["train_normalized_mse"],

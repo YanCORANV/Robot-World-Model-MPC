@@ -1,0 +1,70 @@
+{
+  "environment": "FetchSlide-v4",
+  "seed": 400,
+  "raw_observation_shape": [
+    25
+  ],
+  "state_dimension": 15,
+  "state_names": [
+    "gripper_x",
+    "gripper_y",
+    "gripper_z",
+    "puck_x",
+    "puck_y",
+    "puck_z",
+    "puck_step_vx",
+    "puck_step_vy",
+    "puck_step_vz",
+    "gripper_step_vx",
+    "gripper_step_vy",
+    "gripper_step_vz",
+    "puck_step_omega_x",
+    "puck_step_omega_y",
+    "puck_step_omega_z"
+  ],
+  "action_shape": [
+    4
+  ],
+  "initial_gripper_xyz_m": [
+    0.9926430583000183,
+    0.7490413784980774,
+    0.41551241278648376
+  ],
+  "initial_puck_xyz_m": [
+    0.8984354138374329,
+    0.6532061100006104,
+    0.4135380983352661
+  ],
+  "initial_puck_step_velocity_m": [
+    3.532320261001587e-05,
+    0.00010744774772319943,
+    3.549931716406718e-05
+  ],
+  "initial_puck_angular_step_velocity_rad": [
+    -0.020586928352713585,
+    -0.0005388755816966295,
+    0.007094975095242262
+  ],
+  "goal_xyz_m": [
+    1.1506582498550415,
+    0.6482097506523132,
+    0.41353633999824524
+  ],
+  "initial_distance_m": 0.2522723078727722,
+  "reward_after_step": -1.0,
+  "success_after_step": false,
+  "terminated": false,
+  "truncated": false,
+  "reward_at_4_9cm": -0.0,
+  "reward_at_5_1cm": -1.0,
+  "gripper_step_position_change_m": [
+    0.024742305278778076,
+    2.008676528930664e-05,
+    0.005157262086868286
+  ],
+  "observed_gripper_step_velocity_m": [
+    0.029873505234718323,
+    9.739240340422839e-06,
+    -0.004118119366466999
+  ]
+}

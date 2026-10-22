@@ -1,0 +1,8 @@
+{
+  "seed": 405,
+  "controlled_steps": 50,
+  "zero_action_coast_steps": 50,
+  "final_settling_distance_m": 0.030062835663557053,
+  "settling_success": true,
+  "frames": 51
+}

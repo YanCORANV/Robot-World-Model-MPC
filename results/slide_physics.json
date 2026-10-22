@@ -1,0 +1,17 @@
+{
+  "gripper_retention": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "gripper_action_gain": [
+    0.02168196439743042,
+    0.025165284052491188,
+    0.024112626910209656
+  ],
+  "sliding_deceleration_m_per_step2": 0.0014266404323279858,
+  "impact_gain": 1.716078758239746,
+  "impact_fit_transitions": 108,
+  "drag_fit_transitions": 2322,
+  "contact_radius_m": 0.061
+}

@@ -1,0 +1,20 @@
+{
+  "episodes": 200,
+  "transitions": 10000,
+  "split_counts": {
+    "train": 6000,
+    "validation": 2000,
+    "test": 2000
+  },
+  "sampler_counts": {
+    "random": 2000,
+    "geometry": 2000,
+    "impulse": 2000,
+    "perturbed_impact": 2000,
+    "impulse_then_coast": 2000
+  },
+  "impact_steps": 235,
+  "sliding_steps": 5331,
+  "decelerating_steps": 4444,
+  "end_step_contact_steps": 68
+}

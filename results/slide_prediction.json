@@ -1,0 +1,304 @@
+{
+  "split": 2,
+  "heldout_transitions": 2000,
+  "heldout_episodes": 40,
+  "regime_counts": {
+    "free_space": 570,
+    "approaching_contact": 324,
+    "impact": 49,
+    "sliding": 1057,
+    "decelerating": 866
+  },
+  "models": {
+    "zero_change": {
+      "one_step": {
+        "all": {
+          "count": 2000,
+          "position_rmse_m": 0.009414495900273323,
+          "velocity_rmse_m_per_step": 0.003981469199061394,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.008824455551803112
+        },
+        "free_space": {
+          "count": 570,
+          "position_rmse_m": 0.00047276189434342086,
+          "velocity_rmse_m_per_step": 0.00010841458424692973,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.0005186169291846454
+        },
+        "approaching_contact": {
+          "count": 324,
+          "position_rmse_m": 0.0003256836789660156,
+          "velocity_rmse_m_per_step": 9.505226626060903e-05,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.0002872103068511933
+        },
+        "impact": {
+          "count": 49,
+          "position_rmse_m": 0.01334448717534542,
+          "velocity_rmse_m_per_step": 0.016800712794065475,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.019760441035032272
+        },
+        "sliding": {
+          "count": 1057,
+          "position_rmse_m": 0.01262133289128542,
+          "velocity_rmse_m_per_step": 0.004110999405384064,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.015413415618240833
+        },
+        "decelerating": {
+          "count": 866,
+          "position_rmse_m": 0.012146822176873684,
+          "velocity_rmse_m_per_step": 0.00415694760158658,
+          "predicted_mean_xy_motion_m": 0.0,
+          "actual_mean_xy_motion_m": 0.01754002645611763
+        }
+      },
+      "multi_step": {
+        "5": {
+          "windows": 1840,
+          "object_position_rmse_m": 0.04597923904657364,
+          "object_velocity_rmse_m_per_step": 0.008910206146538258,
+          "impact_start_position_rmse_m": 0.08345140516757965,
+          "impact_start_windows": 47,
+          "sliding_start_position_rmse_m": 0.05654183030128479,
+          "sliding_start_windows": 1015
+        },
+        "20": {
+          "windows": 1240,
+          "object_position_rmse_m": 0.1626662015914917,
+          "object_velocity_rmse_m_per_step": 0.011390953324735165,
+          "impact_start_position_rmse_m": 0.26584944128990173,
+          "impact_start_windows": 40,
+          "sliding_start_position_rmse_m": 0.1601751297712326,
+          "sliding_start_windows": 731
+        }
+      },
+      "final_stopping_position": {
+        "episodes": 28,
+        "mean_xy_error_m": 0.5151124007201621,
+        "median_xy_error_m": 0.5588407814502716
+      }
+    },
+    "simple_physics": {
+      "one_step": {
+        "all": {
+          "count": 2000,
+          "position_rmse_m": 0.004428340587764978,
+          "velocity_rmse_m_per_step": 0.004658081568777561,
+          "predicted_mean_xy_motion_m": 0.00856852252036333,
+          "actual_mean_xy_motion_m": 0.008824455551803112
+        },
+        "free_space": {
+          "count": 570,
+          "position_rmse_m": 0.00019774700922425836,
+          "velocity_rmse_m_per_step": 0.00039890172774903476,
+          "predicted_mean_xy_motion_m": 0.0002993074886035174,
+          "actual_mean_xy_motion_m": 0.0005186169291846454
+        },
+        "approaching_contact": {
+          "count": 324,
+          "position_rmse_m": 0.0010780299780890346,
+          "velocity_rmse_m_per_step": 0.0021560355089604855,
+          "predicted_mean_xy_motion_m": 0.0003463249304331839,
+          "actual_mean_xy_motion_m": 0.0002872103068511933
+        },
+        "impact": {
+          "count": 49,
+          "position_rmse_m": 0.005321064963936806,
+          "velocity_rmse_m_per_step": 0.0045165447518229485,
+          "predicted_mean_xy_motion_m": 0.01454964466392994,
+          "actual_mean_xy_motion_m": 0.019760441035032272
+        },
+        "sliding": {
+          "count": 1057,
+          "position_rmse_m": 0.005951093975454569,
+          "velocity_rmse_m_per_step": 0.006212804466485977,
+          "predicted_mean_xy_motion_m": 0.015270859003067017,
+          "actual_mean_xy_motion_m": 0.015413415618240833
+        },
+        "decelerating": {
+          "count": 866,
+          "position_rmse_m": 0.0016981590306386352,
+          "velocity_rmse_m_per_step": 0.000935312535148114,
+          "predicted_mean_xy_motion_m": 0.017534786835312843,
+          "actual_mean_xy_motion_m": 0.01754002645611763
+        }
+      },
+      "multi_step": {
+        "5": {
+          "windows": 1840,
+          "object_position_rmse_m": 0.02093261294066906,
+          "object_velocity_rmse_m_per_step": 0.005991491489112377,
+          "impact_start_position_rmse_m": 0.017887812107801437,
+          "impact_start_windows": 47,
+          "sliding_start_position_rmse_m": 0.025814976543188095,
+          "sliding_start_windows": 1015
+        },
+        "20": {
+          "windows": 1240,
+          "object_position_rmse_m": 0.08620411902666092,
+          "object_velocity_rmse_m_per_step": 0.006751183420419693,
+          "impact_start_position_rmse_m": 0.06457855552434921,
+          "impact_start_windows": 40,
+          "sliding_start_position_rmse_m": 0.06708789616823196,
+          "sliding_start_windows": 731
+        }
+      },
+      "final_stopping_position": {
+        "episodes": 28,
+        "mean_xy_error_m": 0.07615223101207189,
+        "median_xy_error_m": 0.060144685208797455
+      }
+    },
+    "learned_mlp": {
+      "one_step": {
+        "all": {
+          "count": 2000,
+          "position_rmse_m": 0.0016085890820249915,
+          "velocity_rmse_m_per_step": 0.002074509160593152,
+          "predicted_mean_xy_motion_m": 0.009442824870347977,
+          "actual_mean_xy_motion_m": 0.008824455551803112
+        },
+        "free_space": {
+          "count": 570,
+          "position_rmse_m": 0.0012426014291122556,
+          "velocity_rmse_m_per_step": 0.0014879766386002302,
+          "predicted_mean_xy_motion_m": 0.001738525228574872,
+          "actual_mean_xy_motion_m": 0.0005186169291846454
+        },
+        "approaching_contact": {
+          "count": 324,
+          "position_rmse_m": 0.000950171030126512,
+          "velocity_rmse_m_per_step": 0.0009878629352897406,
+          "predicted_mean_xy_motion_m": 0.0013112039305269718,
+          "actual_mean_xy_motion_m": 0.0002872103068511933
+        },
+        "impact": {
+          "count": 49,
+          "position_rmse_m": 0.0035761871840804815,
+          "velocity_rmse_m_per_step": 0.0038880661595612764,
+          "predicted_mean_xy_motion_m": 0.01869533210992813,
+          "actual_mean_xy_motion_m": 0.019760441035032272
+        },
+        "sliding": {
+          "count": 1057,
+          "position_rmse_m": 0.001787114073522389,
+          "velocity_rmse_m_per_step": 0.0024390844628214836,
+          "predicted_mean_xy_motion_m": 0.015661107376217842,
+          "actual_mean_xy_motion_m": 0.015413415618240833
+        },
+        "decelerating": {
+          "count": 866,
+          "position_rmse_m": 0.0015788177261129022,
+          "velocity_rmse_m_per_step": 0.0020133648067712784,
+          "predicted_mean_xy_motion_m": 0.017817648127675056,
+          "actual_mean_xy_motion_m": 0.01754002645611763
+        }
+      },
+      "multi_step": {
+        "5": {
+          "windows": 1840,
+          "object_position_rmse_m": 0.010564526543021202,
+          "object_velocity_rmse_m_per_step": 0.0042215269058942795,
+          "impact_start_position_rmse_m": 0.016729742288589478,
+          "impact_start_windows": 47,
+          "sliding_start_position_rmse_m": 0.010530723258852959,
+          "sliding_start_windows": 1015
+        },
+        "20": {
+          "windows": 1240,
+          "object_position_rmse_m": 0.08084716647863388,
+          "object_velocity_rmse_m_per_step": 0.014977228827774525,
+          "impact_start_position_rmse_m": 0.09711115062236786,
+          "impact_start_windows": 40,
+          "sliding_start_position_rmse_m": 0.07954797148704529,
+          "sliding_start_windows": 731
+        }
+      },
+      "final_stopping_position": {
+        "episodes": 28,
+        "mean_xy_error_m": 0.26644745509007145,
+        "median_xy_error_m": 0.25431571155786514
+      }
+    },
+    "hybrid_learned_physics": {
+      "one_step": {
+        "all": {
+          "count": 2000,
+          "position_rmse_m": 0.004370330832898617,
+          "velocity_rmse_m_per_step": 0.004575004801154137,
+          "predicted_mean_xy_motion_m": 0.008645662106573582,
+          "actual_mean_xy_motion_m": 0.008824455551803112
+        },
+        "free_space": {
+          "count": 570,
+          "position_rmse_m": 0.00019774700922425836,
+          "velocity_rmse_m_per_step": 0.00039890172774903476,
+          "predicted_mean_xy_motion_m": 0.0002993074886035174,
+          "actual_mean_xy_motion_m": 0.0005186169291846454
+        },
+        "approaching_contact": {
+          "count": 324,
+          "position_rmse_m": 0.0003826960164587945,
+          "velocity_rmse_m_per_step": 0.0006503040785901248,
+          "predicted_mean_xy_motion_m": 0.00029808629187755287,
+          "actual_mean_xy_motion_m": 0.0002872103068511933
+        },
+        "impact": {
+          "count": 49,
+          "position_rmse_m": 0.0037678517401218414,
+          "velocity_rmse_m_per_step": 0.004126913845539093,
+          "predicted_mean_xy_motion_m": 0.01801716350018978,
+          "actual_mean_xy_motion_m": 0.019760441035032272
+        },
+        "sliding": {
+          "count": 1057,
+          "position_rmse_m": 0.005951093975454569,
+          "velocity_rmse_m_per_step": 0.006212804466485977,
+          "predicted_mean_xy_motion_m": 0.015270859003067017,
+          "actual_mean_xy_motion_m": 0.015413415618240833
+        },
+        "decelerating": {
+          "count": 866,
+          "position_rmse_m": 0.0016981590306386352,
+          "velocity_rmse_m_per_step": 0.000935312535148114,
+          "predicted_mean_xy_motion_m": 0.017534786835312843,
+          "actual_mean_xy_motion_m": 0.01754002645611763
+        }
+      },
+      "multi_step": {
+        "5": {
+          "windows": 1840,
+          "object_position_rmse_m": 0.019922588020563126,
+          "object_velocity_rmse_m_per_step": 0.005107598379254341,
+          "impact_start_position_rmse_m": 0.019124608486890793,
+          "impact_start_windows": 47,
+          "sliding_start_position_rmse_m": 0.025814976543188095,
+          "sliding_start_windows": 1015
+        },
+        "20": {
+          "windows": 1240,
+          "object_position_rmse_m": 0.06549625098705292,
+          "object_velocity_rmse_m_per_step": 0.00639748340472579,
+          "impact_start_position_rmse_m": 0.08341168612241745,
+          "impact_start_windows": 40,
+          "sliding_start_position_rmse_m": 0.0673212930560112,
+          "sliding_start_windows": 731
+        }
+      },
+      "final_stopping_position": {
+        "episodes": 28,
+        "mean_xy_error_m": 0.07615223101207189,
+        "median_xy_error_m": 0.060144685208797455
+      }
+    }
+  },
+  "trajectory_example": {
+    "episode_id": 6,
+    "episode_seed": 6006,
+    "start_timestep": 6,
+    "horizon": 25
+  }
+}
