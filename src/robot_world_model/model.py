@@ -1,0 +1,83 @@
+"""Normalized residual forward dynamics. Goal is deliberately absent."""
+
+from pathlib import Path
+import numpy as np
+import torch
+from torch import nn
+
+from .env import STATE_DIM, ACTION_DIM
+
+
+class DynamicsMLP(nn.Module):
+    def __init__(self, hidden=128):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(STATE_DIM + ACTION_DIM, hidden), nn.ReLU(),
+                                 nn.Linear(hidden, hidden), nn.ReLU(),
+                                 nn.Linear(hidden, STATE_DIM))
+        self.register_buffer("input_mean", torch.zeros(STATE_DIM + ACTION_DIM))
+        self.register_buffer("input_std", torch.ones(STATE_DIM + ACTION_DIM))
+        self.register_buffer("delta_mean", torch.zeros(STATE_DIM))
+        self.register_buffer("delta_std", torch.ones(STATE_DIM))
+
+    def fit_normalizers(self, state, action, next_state):
+        x = torch.as_tensor(np.concatenate([state, action], axis=1), dtype=torch.float32)
+        y = torch.as_tensor(next_state - state, dtype=torch.float32)
+        self.input_mean.copy_(x.mean(0))
+        self.input_std.copy_(x.std(0).clamp_min(1e-3))
+        self.delta_mean.copy_(y.mean(0))
+        self.delta_std.copy_(y.std(0).clamp_min(1e-4))
+
+    def forward(self, state, action):
+        x = torch.cat([state, action], dim=-1)
+        delta = self.net((x - self.input_mean) / self.input_std)
+        return state + delta * self.delta_std + self.delta_mean
+
+
+def load_model(path):
+    checkpoint = torch.load(path, map_location="cpu", weights_only=True)
+    model = DynamicsMLP(checkpoint["hidden"])
+    model.load_state_dict(checkpoint["state_dict"])
+    return model.eval()
+
+
+def train(data, path, epochs=35, batch_size=128, seed=7, hidden=128):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    torch.set_num_threads(min(torch.get_num_threads(), 4))
+    model = DynamicsMLP(hidden)
+    train_mask = data["split"] == 0
+    val_mask = data["split"] == 1
+    model.fit_normalizers(data["state"][train_mask], data["action"][train_mask],
+                          data["next_state"][train_mask])
+    state = torch.from_numpy(data["state"].astype(np.float32))
+    action = torch.from_numpy(data["action"].astype(np.float32))
+    next_state = torch.from_numpy(data["next_state"].astype(np.float32))
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    best = float("inf")
+    history = []
+    for epoch in range(epochs):
+        model.train()
+        order = torch.as_tensor(np.random.permutation(np.flatnonzero(train_mask)))
+        for batch in order.split(batch_size):
+            predicted = model(state[batch], action[batch])
+            loss = (((predicted - next_state[batch]) / model.delta_std) ** 2).mean()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        model.eval()
+        with torch.no_grad():
+            val_pred = model(state[val_mask], action[val_mask])
+            train_pred = model(state[train_mask], action[train_mask])
+            train_loss = float((((train_pred - next_state[train_mask]) / model.delta_std) ** 2).mean())
+            val_loss = float((((val_pred - next_state[val_mask]) / model.delta_std) ** 2).mean())
+        history.append({"epoch": epoch + 1, "train_normalized_mse": train_loss,
+                        "validation_normalized_mse": val_loss})
+        if val_loss < best:
+            best = val_loss
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            torch.save({"state_dict": model.state_dict(), "hidden": hidden,
+                        "seed": seed, "best_epoch": epoch + 1}, path)
+    return {"best_validation_normalized_mse": best,
+            "best_epoch": min(history, key=lambda row: row["validation_normalized_mse"])["epoch"],
+            "last_train_normalized_mse": history[-1]["train_normalized_mse"],
+            "history": history}

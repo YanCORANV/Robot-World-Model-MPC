@@ -1,0 +1,116 @@
+{
+  "random": {
+    "success_rate": 0.0,
+    "mean_final_distance_m": 0.17825211584568024,
+    "mean_near_object_fraction": 0.0,
+    "mean_planning_runtime_ms_per_step": 0.0,
+    "episodes": [
+      {
+        "seed": 100,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.23329146206378937,
+        "final_distance_m": 0.23329146206378937,
+        "near_object_fraction": 0.0,
+        "object_path_length_m": 2.9802322387695312e-08,
+        "planning_runtime_ms_per_step": 0.0
+      },
+      {
+        "seed": 101,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.08429525792598724,
+        "final_distance_m": 0.08429525792598724,
+        "near_object_fraction": 0.0,
+        "object_path_length_m": 2.9802322387695312e-08,
+        "planning_runtime_ms_per_step": 0.0
+      },
+      {
+        "seed": 102,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.2171696275472641,
+        "final_distance_m": 0.2171696275472641,
+        "near_object_fraction": 0.0,
+        "object_path_length_m": 2.9802322387695312e-08,
+        "planning_runtime_ms_per_step": 0.0
+      }
+    ]
+  },
+  "heuristic": {
+    "success_rate": 0.0,
+    "mean_final_distance_m": 0.10631478081146876,
+    "mean_near_object_fraction": 0.6533333333333333,
+    "mean_planning_runtime_ms_per_step": 0.0,
+    "episodes": [
+      {
+        "seed": 100,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.23329146206378937,
+        "final_distance_m": 0.08471185714006424,
+        "near_object_fraction": 0.52,
+        "object_path_length_m": 1.000170714163687,
+        "planning_runtime_ms_per_step": 0.0
+      },
+      {
+        "seed": 101,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.08429525792598724,
+        "final_distance_m": 0.10806980729103088,
+        "near_object_fraction": 0.7,
+        "object_path_length_m": 0.9810529212445545,
+        "planning_runtime_ms_per_step": 0.0
+      },
+      {
+        "seed": 102,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.2171696275472641,
+        "final_distance_m": 0.12616267800331116,
+        "near_object_fraction": 0.74,
+        "object_path_length_m": 0.9593130971770734,
+        "planning_runtime_ms_per_step": 0.0
+      }
+    ]
+  },
+  "learned_mpc": {
+    "success_rate": 0.0,
+    "mean_final_distance_m": 0.18015378216902414,
+    "mean_near_object_fraction": 0.07333333333333333,
+    "mean_planning_runtime_ms_per_step": 2.387709967636814,
+    "episodes": [
+      {
+        "seed": 100,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.23329146206378937,
+        "final_distance_m": 0.22011400759220123,
+        "near_object_fraction": 0.16,
+        "object_path_length_m": 0.05208185453739134,
+        "planning_runtime_ms_per_step": 2.833343264646828
+      },
+      {
+        "seed": 101,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.08429525792598724,
+        "final_distance_m": 0.08429525792598724,
+        "near_object_fraction": 0.0,
+        "object_path_length_m": 2.9802322387695312e-08,
+        "planning_runtime_ms_per_step": 2.201482381206006
+      },
+      {
+        "seed": 102,
+        "steps": 50,
+        "success": false,
+        "initial_distance_m": 0.2171696275472641,
+        "final_distance_m": 0.23605208098888397,
+        "near_object_fraction": 0.06,
+        "object_path_length_m": 0.019372230838598625,
+        "planning_runtime_ms_per_step": 2.128304257057607
+      }
+    ]
+  }
+}

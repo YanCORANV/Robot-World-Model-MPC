@@ -1,0 +1,13 @@
+{
+  "one_step": {
+    "state_rmse_m": 0.005285925231873989,
+    "object_position_rmse_m": 0.004691578447818756,
+    "zero_delta_state_rmse_m": 0.013731029815971851,
+    "zero_delta_object_position_rmse_m": 0.012725184671580791
+  },
+  "multi_step": {
+    "horizon": 5,
+    "windows": 138,
+    "object_position_rmse_m": 0.03162235766649246
+  }
+}

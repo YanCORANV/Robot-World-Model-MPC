@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot-world-model-mpc"
+version = "0.1.0"
+description = "State dynamics and model predictive control for FetchPush"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26,<3",
+  "torch>=2.3,<3",
+  "mujoco==3.4.0",
+  "gymnasium-robotics==1.4.2",
+  "matplotlib>=3.8,<4",
+  "imageio>=2.34,<3",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[project.scripts]
+rwm = "robot_world_model.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
